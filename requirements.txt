@@ -1,0 +1,8 @@
+fastapi[standard]
+sqlalchemy
+pydantic
+streamlit
+uvicorn
+python-dotenv
+psycopg2
+requests
