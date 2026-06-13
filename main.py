@@ -90,20 +90,20 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
         return {"message": "User deleted"}
 
 
-@app.get("/categories", tags=["Categories"])
+@app.get("/categories", tags=["Categories"], response_model=ResponseCategory)
 async def get_all_categories(db: Session = Depends(get_db)):
     return {"categories": db.query(models.Category).all()}
 
 
-@app.get("categories/{categories_id}", tags=["Categories"])
-async def category_detail(categories_id: int, db: Session = Depends(get_db)):
-    category = db.query(models.Category).filter(models.Category.id == categories_id).first()
+@app.get("/categories/{category_id}", tags=["Categories"], response_model=ResponseCategory)
+async def category_detail(category_id: int, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not category:
         return {"message": "Category not found"}
     return {"categories": category}
 
 
-@app.post("/categories", tags=["Categories"])
+@app.post("/categories", tags=["Categories"], response_model=ResponseCategory)
 async def create_category(categorie: CretaCategory, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter(models.Category.name == categorie.name).first()
     if category:
@@ -117,6 +117,80 @@ async def create_category(categorie: CretaCategory, db: Session = Depends(get_db
         db.commit()
         db.refresh(new_category)
         return {"message": "Category created"}
+
+
+@app.put("/categories/{category_id}", tags=["Categories"], response_model=ResponseCategory)
+async def update_category(category_id: int, category_update: ResponseCategory, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not category:
+        return {"message": "Category not found"}
+    else:
+        category.name = category_update.name
+        db.commit()
+        db.refresh(category)
+        return {"message": "Category updated"}
+
+
+@app.delete("/categories/{category_id}", tags=["Categories"], response_model=ResponseCategory)
+async def delete_category(category_id: int, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not category:
+        return {"message": "Category not found"}
+    else:
+        db.delete(category)
+        db.commit()
+        return {"message": "Category deleted"}
+
+
+@app.get("/products", tags=["Products"])
+async def get_all_products(db: Session = Depends(get_db)):
+    return {"products": db.query(models.Product).all()}
+
+
+@app.get("/products/{product_id}", tags=["Products"])
+async def get_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        return {"message": "Product not found"}
+    else:
+        return {"product": product}
+
+
+@app.post("/product", tags=["Products"])
+async def create_product(product: CreateProduct, db: Session = Depends(get_db)):
+    category_product = db.query(models.Category).filter(models.Category.id == product.category_id).first()
+    if not category_product:
+        return {"message": "Category not found"}
+    product_check = db.query(models.Product).filter(
+        models.Product.category == product.category_id and models.Product.name == product.name).first()
+    if product_check:
+        return {"message": "Product already exists"}
+    else:
+        new_product = models.Product(
+            category=product.category_id,
+            name=product.name,
+            image_url=product.image_url,
+            description=product.description,
+            price=product.price,
+            quantity=product.quantity,
+            is_active=product.is_active,
+
+        )
+        db.add(new_product)
+        db.commit()
+        db.refresh(new_product)
+        return {"message": "Product created"}
+
+
+@app.delete("/products/{product_id}", tags=["Products"])
+async def delete_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        return {"message": "Product not found"}
+    else:
+        db.delete(product)
+        db.commit()
+        return {"message": "Product deleted"}
 
 
 @app.post("/login", tags=["Login/Register"])

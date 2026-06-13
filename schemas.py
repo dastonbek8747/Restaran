@@ -23,10 +23,6 @@ class UserResponse(BaseModel):
     email: EmailStr
 
 
-class UserDelete(BaseModel):
-    id: int
-    email: EmailStr
-
 
 class UserUpdate(BaseModel):
     first_name: str
