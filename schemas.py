@@ -28,8 +28,20 @@ class UserDelete(BaseModel):
     email: EmailStr
 
 
-class UserUpdate(UserCreate):
-    pass
+class UserUpdate(BaseModel):
+    first_name: str
+    last_name: str
+    phone_number: str
+    email: EmailStr
+    password: str
+
+
+class UserPatch(BaseModel):
+    first_name: str | None = None
+    last_name: str | None= None
+    phone_number: str | None= None
+    email: EmailStr | None= None
+    password: str | None= None
 
 
 class Category(BaseModel):
