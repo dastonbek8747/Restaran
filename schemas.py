@@ -38,23 +38,50 @@ class UserUpdate(BaseModel):
 
 class UserPatch(BaseModel):
     first_name: str | None = None
-    last_name: str | None= None
-    phone_number: str | None= None
-    email: EmailStr | None= None
-    password: str | None= None
+    last_name: str | None = None
+    phone_number: str | None = None
+    email: EmailStr | None = None
+    password: str | None = None
 
 
-class Category(BaseModel):
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class CretaCategory(BaseModel):
+    name: str
+
+
+class ResponseCategory(BaseModel):
     id: int
     name: str
 
 
-class Product(BaseModel):
-    id: int
+class CreateProduct(BaseModel):
     category_id: int
     name: str
     image_url: str
     description: str
-    price: float
+    price: int
     quantity: int
     is_active: bool
+
+
+class UpdateProduct(CreateProduct):
+    pass
+
+
+class PatchProduct(BaseModel):
+    category_id: int
+    product_id: int
+    name: str | None = None
+    image_url: str | None = None
+    description: str | None = None
+    price: int | None = None
+    quantity: int | None = None
+    is_active: bool | None = None
+
+
+class DeleteProduct(BaseModel):
+    id: int

@@ -8,7 +8,7 @@ class User(Base):
     first_name = Column(String, nullable=False, index=True)
     last_name = Column(String, nullable=False, index=True)
     phone_number = Column(String, nullable=False, index=True)
-    email = Column(String, nullable=False, index=True)
+    email = Column(String, nullable=False, index=True, unique=True)
     password = Column(String, nullable=False, index=True)
 
 

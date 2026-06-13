@@ -92,20 +92,61 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.get("/categories", tags=["Categories"])
 async def get_all_categories(db: Session = Depends(get_db)):
-    return {"categories": db.query(Category).all()}
+    return {"categories": db.query(models.Category).all()}
 
 
 @app.get("categories/{categories_id}", tags=["Categories"])
 async def category_detail(categories_id: int, db: Session = Depends(get_db)):
-    category = db.query(Category).filter(models.Category.id == categories_id).first()
+    category = db.query(models.Category).filter(models.Category.id == categories_id).first()
     if not category:
         return {"message": "Category not found"}
     return {"categories": category}
 
 
 @app.post("/categories", tags=["Categories"])
-async def create_category(categorie):
-    pass
+async def create_category(categorie: CretaCategory, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter(models.Category.name == categorie.name).first()
+    if category:
+        return {"message": "Category already exists"}
+    else:
+        new_category = models.Category(
+            name=categorie.name
+
+        )
+        db.add(new_category)
+        db.commit()
+        db.refresh(new_category)
+        return {"message": "Category created"}
+
+
+@app.post("/login", tags=["Login/Register"])
+async def login_user(user_login: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == user_login.email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Bunday email topilmadi ")
+    if user.password != user_login.password:
+        return {"message": "Parol mos kelmadi !"}
+    return {"message": "Successfully logged in"}
+
+
+@app.post("/register", tags=["Login/Register"])
+async def register_user(user_register: UserCreate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == user_register.email).first()
+    if user:
+        return {"message": "User already exists"}
+    else:
+        new_user = models.User(
+            first_name=user_register.first_name,
+            last_name=user_register.last_name,
+            email=user_register.email,
+            phone_number=user_register.phone_number,
+            password=user_register.password
+        )
+        db.add(new_user)
+        print(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return {"message": "User created"}
 
 
 if __name__ == "__main__":
