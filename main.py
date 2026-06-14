@@ -90,12 +90,12 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
         return {"message": "User deleted"}
 
 
-@app.get("/categories", tags=["Categories"], response_model=ResponseCategory)
+@app.get("/categories", tags=["Categories"])
 async def get_all_categories(db: Session = Depends(get_db)):
     return {"categories": db.query(models.Category).all()}
 
 
-@app.get("/categories/{category_id}", tags=["Categories"], response_model=ResponseCategory)
+@app.get("/categories/{category_id}", tags=["Categories"])
 async def category_detail(category_id: int, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not category:
@@ -103,14 +103,15 @@ async def category_detail(category_id: int, db: Session = Depends(get_db)):
     return {"categories": category}
 
 
-@app.post("/categories", tags=["Categories"], response_model=ResponseCategory)
+@app.post("/categories", tags=["Categories"])
 async def create_category(categorie: CretaCategory, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter(models.Category.name == categorie.name).first()
     if category:
         return {"message": "Category already exists"}
     else:
         new_category = models.Category(
-            name=categorie.name
+            name=categorie.name,
+            image_url=category.image_url
 
         )
         db.add(new_category)
@@ -119,19 +120,20 @@ async def create_category(categorie: CretaCategory, db: Session = Depends(get_db
         return {"message": "Category created"}
 
 
-@app.put("/categories/{category_id}", tags=["Categories"], response_model=ResponseCategory)
+@app.put("/categories/{category_id}", tags=["Categories"])
 async def update_category(category_id: int, category_update: ResponseCategory, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not category:
         return {"message": "Category not found"}
     else:
         category.name = category_update.name
+        category.image_url = category_update.image_url
         db.commit()
         db.refresh(category)
         return {"message": "Category updated"}
 
 
-@app.delete("/categories/{category_id}", tags=["Categories"], response_model=ResponseCategory)
+@app.delete("/categories/{category_id}", tags=["Categories"])
 async def delete_category(category_id: int, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not category:
@@ -162,7 +164,7 @@ async def create_product(product: CreateProduct, db: Session = Depends(get_db)):
     if not category_product:
         return {"message": "Category not found"}
     product_check = db.query(models.Product).filter(
-        models.Product.category == product.category_id and models.Product.name == product.name).first()
+        models.Product.name == product.name).first()
     if product_check:
         return {"message": "Product already exists"}
     else:
@@ -172,7 +174,6 @@ async def create_product(product: CreateProduct, db: Session = Depends(get_db)):
             image_url=product.image_url,
             description=product.description,
             price=product.price,
-            quantity=product.quantity,
             is_active=product.is_active,
 
         )
@@ -180,6 +181,44 @@ async def create_product(product: CreateProduct, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_product)
         return {"message": "Product created"}
+
+
+@app.put("/product/{product_id}", tags=["Products"])
+async def update_product(product_id: int, product_update: UpdateProduct, db: Session = Depends(get_db)):
+    db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not db_product:
+        return {"message": "Product not found"}
+    else:
+        db_product.category = product_update.category_id
+        db_product.name = product_update.name
+        db_product.image_url = product_update.image_url
+        db_product.description = product_update.description
+        db_product.price = product_update.price
+        db_product.is_active = product_update.is_active
+        db.commit()
+        db.refresh(db_product)
+        return {"message": "Product updated"}
+
+
+@app.patch("/product/{product_id}", tags=["Products"])
+async def patch_product(product_id: int, product_update: PatchProduct, db: Session = Depends(get_db)):
+    db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not db_product:
+        return {"message": "Product not found"}
+    else:
+        product_data = product_update.model_dump(exclude_none=True)
+        for key, value in product_data.items():
+            setattr(db_product, key, value)
+        db.commit()
+        db.refresh(db_product)
+        return {"message": "Product patched"}
+
+
+@app.delete("/products", tags=["Products"])
+async def delete_products(db: Session = Depends(get_db)):
+    db.query(models.Product).delete()
+    db.commit()
+    return {"message": "Products deleted"}
 
 
 @app.delete("/products/{product_id}", tags=["Products"])
@@ -197,7 +236,7 @@ async def delete_product(product_id: int, db: Session = Depends(get_db)):
 async def login_user(user_login: UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_login.email).first()
     if not user:
-        raise HTTPException(status_code=401, detail="Bunday email topilmadi ")
+        return {"message": "User not found"}
     if user.password != user_login.password:
         return {"message": "Parol mos kelmadi !"}
     return {"message": "Successfully logged in"}

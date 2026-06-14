@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr, model_validator
+from datetime import datetime
 
 
 class UserCreate(BaseModel):
@@ -21,7 +22,6 @@ class UserResponse(BaseModel):
     first_name: str
     phone_number: int
     email: EmailStr
-
 
 
 class UserUpdate(BaseModel):
@@ -47,11 +47,13 @@ class UserLogin(BaseModel):
 
 class CretaCategory(BaseModel):
     name: str
+    image_url:str
 
 
 class ResponseCategory(BaseModel):
     id: int
     name: str
+    image_url: str
 
 
 class CreateProduct(BaseModel):
@@ -60,7 +62,6 @@ class CreateProduct(BaseModel):
     image_url: str
     description: str
     price: int
-    quantity: int
     is_active: bool
 
 
@@ -75,9 +76,47 @@ class PatchProduct(BaseModel):
     image_url: str | None = None
     description: str | None = None
     price: int | None = None
-    quantity: int | None = None
     is_active: bool | None = None
 
 
 class DeleteProduct(BaseModel):
     id: int
+
+
+class OrderCreate(BaseModel):
+    user_id: int
+    total_price: int
+    status: str
+    created_at: datetime
+
+
+class PatchOrder(BaseModel):
+    user_id: int
+    total_price: int | None = None
+    status: str | None = None
+    created_at: datetime | None = None
+
+
+class ResponseOrder(BaseModel):
+    id: int
+    user_id: int
+    total_price: int
+    status: str
+    created_at: datetime
+
+
+class CreateOrderItem(BaseModel):
+    order_id: int
+    product_id: int
+    quantity: int
+    price: int
+
+
+class UpdateOrderItem(CreateOrderItem):
+    pass
+
+class PatchOrderItem(BaseModel):
+    order_id: int
+    product_id: int
+    quantity: int
+    price: int

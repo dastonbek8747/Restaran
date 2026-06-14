@@ -16,6 +16,7 @@ class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
+    image_url = Column(String, nullable=False, index=True)
 
 
 class Product(Base):
@@ -26,7 +27,6 @@ class Product(Base):
     image_url = Column(String, nullable=False, index=True)
     description = Column(String, nullable=False, index=True)
     price = Column(Integer, nullable=False, index=True)
-    quantity = Column(Integer, nullable=False, index=True)
     is_active = Column(Boolean, nullable=False, default=True)
 
 
@@ -34,7 +34,15 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    total_price = Column(Integer, nullable=False, index=True)
+    status = Column(String, default="pending", nullable=False)
+    created_at = Column(DateTime, nullable=False, index=True)
+
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), index=True)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), index=True)
     quantity = Column(Integer, nullable=False, index=True)
-    is_active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, nullable=False, index=True)
+    price = Column(Integer, nullable=False, index=True)
